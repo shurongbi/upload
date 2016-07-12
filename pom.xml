@@ -62,6 +62,11 @@
 			<artifactId>scala-library</artifactId>
 			<version>2.11.0</version>
 		</dependency>
+	    <dependency>
+		    <groupId>com.hynnet</groupId>
+		    <artifactId>sqljdbc4-chs</artifactId>
+		    <version>4.0.2206.100</version>
+		</dependency>
 	</dependencies>
 
 	<build>

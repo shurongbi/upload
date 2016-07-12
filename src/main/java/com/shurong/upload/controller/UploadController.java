@@ -27,14 +27,22 @@ public class UploadController {
 		if (inputdaygly != null)
 		{
 			System.out.println(inputdaygly.getOriginalFilename());
+			try {
+				reportDailyService.doDailyReport(ExcelUtils.initWorkbook(inputdaygly.getInputStream()));
+			} catch (Exception e) {
+				returnMap.put("result", "ko");
+				returnMap.put("msg", inputdaygly.getOriginalFilename() + "导入失败。" + e.getMessage());
+				return returnMap;
+			} 
+			returnMap.put("result", "ok");
+			returnMap.put("msg", inputdaygly.getOriginalFilename() +"导入成功");
 		}
-		try {
-			reportDailyService.doDailyReport(ExcelUtils.initWorkbook(inputdaygly.getInputStream()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
+		else
+		{
+			returnMap.put("result", "ko");
+			returnMap.put("msg", "文件上传发生异常");
+		}
 		
-		returnMap.put("err.code", "上传成功");
 		return returnMap;
 	}
 	

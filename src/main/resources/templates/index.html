@@ -44,7 +44,7 @@
 	}).on('fileerror', function(event, data, msg) {
 
 	}).on("fileuploaded", function (event, data, previewId, index) {
-		alert(index + "=="+ previewId +JSON.stringify(data.success));
+		alert(JSON.stringify(data.response.msg));
  	});
     
 	
