@@ -3,8 +3,14 @@ package com.shurong.upload.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -14,6 +20,8 @@ import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.StringUtils;
@@ -119,5 +127,109 @@ public class ExcelUtils {
         return cellValue;    
     }
     
+    /**
+     * 获取一夜的表头
+     * 判断依据，到第一行是出现数字为止的，之前最近的数据
+     * @param sheet
+     * @return
+     */
+    public static Map<String, Object> getRowTitle(Sheet sheet)
+    {
+    	Map<String, Object> resultMap = new HashMap<>();
+    	int contentStartIndex = -1;
+//    	List<String> titleList = new LinkedList<>();
+    	String[] titleList = new String[30];
+    	if (sheet == null) return null;
+    	for(int i=0; i<sheet.getLastRowNum(); i++)
+    	{
+    		Row row = sheet.getRow(i);
+    		//判断是否为正文
+    		if (isStartContent(row))
+    		{
+    			contentStartIndex = row.getRowNum();
+    			break;
+    		}
+    		
+    		for (int j = 0; j < row.getLastCellNum(); j++)
+			{
+				Cell cell = row.getCell(j);
+				if (cell == null)
+					continue;
+				
+				if (Cell.CELL_TYPE_BLANK == cell.getCellType())
+					continue;
+				
+				String value = cell.getStringCellValue();
+				if (StringUtils.isEmpty(value))
+					continue;
+				if (j >= titleList.length)
+					titleList = (String[]) extendArrays(titleList, 10, j);
+				titleList[j] = value;
+//				setIndexObj(titleList, j, value);
+			}
+    		
+    	}
+    	resultMap.put("contentStartIndex", contentStartIndex);
+    	resultMap.put("titleList", titleList);
+    		
+    	return resultMap;
+    }
+    
+    /**
+     * 判断是否到表的中文了
+     * 当第一格是数字就认为开始正文了
+     * @param row
+     * @return
+     */
+    public static boolean isStartContent(Row row)
+    {
+    	Cell cellStart = row.getCell(0);
+    	if (cellStart == null || Cell.CELL_TYPE_BLANK == cellStart.getCellType())
+    		return false;
+    	
+    	if (Cell.CELL_TYPE_NUMERIC == cellStart.getCellType())
+    		return true;
+    	if (Cell.CELL_TYPE_STRING == cellStart.getCellType() && isNum(cellStart.getStringCellValue()))
+    		return true;
+    	
+    	return false;
+    }
+    
+    /**
+     * 判断String 是否是数字
+     * @param str
+     * @return
+     */
+    public static boolean isNum(String str) {
+    	  
+        try {
+            new BigDecimal(str);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    public static <E> void setIndexObj(List<E> list,int index,  E element)
+    {
+    	if (list == null) return;
+    	
+    	if (list.size() < index)
+    	{
+    		for (int i = list.size(); i < index; i++)
+    			list.set(i, null);
+    		list.set(index, element);
+    	}else
+    	{
+    		list.set(index, element);
+    	}
+    }
+    
+    public static Object[] extendArrays(Object[] array,int extendNum, int index)
+    {
+    	if (index > array.length + extendNum)
+    		return Arrays.copyOf(array, index + extendNum);
+    	return Arrays.copyOf(array, array.length + extendNum);
+    }
     
 }

@@ -3,6 +3,8 @@ package com.shurong.upload.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,8 @@ import com.shurong.upload.util.ExcelUtils;
 
 @Controller
 public class UploadController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(UploadController.class);
 	
 	@Autowired
 	private ReportDailyService reportDailyService;
@@ -30,6 +34,8 @@ public class UploadController {
 			try {
 				reportDailyService.doDailyReport(ExcelUtils.initWorkbook(inputdaygly.getInputStream()));
 			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(inputdaygly.getOriginalFilename() + "导入失败。" , e);
 				returnMap.put("result", "ko");
 				returnMap.put("msg", inputdaygly.getOriginalFilename() + "导入失败。" + e.getMessage());
 				return returnMap;
