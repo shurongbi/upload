@@ -17,16 +17,28 @@
 <body>
 	<div class="container">
 		<div class="row">
-			<div class="col-md-6">
+			<div class="col-md-12">
 				<form enctype="multipart/form-data">
 					<label>日报上传</label> 
-					<input id="file-fr" name="inputdaygly" type="file" multiple="multiple" class="file-loading" />
+					<input id="file-daily" name="inputgly" type="file" multiple="multiple" class="file-loading" />
 				</form>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-12">
 				<form enctype="multipart/form-data">
 					<label>月报上传</label> 
-					<input id="file-es" name="inputmonthgly" type="file" multiple="multiple" class="file-loading" />
+					<input id="file-month" name="inputgly" type="file" multiple="multiple" class="file-loading" />
+				</form>
+			</div>
+			<div class="col-md-12">
+				<form enctype="multipart/form-data">
+					<label>西医病案例导入</label> 
+					<input id="file-xybalsy" name="inputgly" type="file" multiple="multiple" class="file-loading" />
+				</form>
+			</div>
+			<div class="col-md-12">
+				<form enctype="multipart/form-data">
+					<label>中医病案例导入</label> 
+					<input id="file-zybalsy" name="inputgly" type="file" multiple="multiple" class="file-loading" />
 				</form>
 			</div>
 
@@ -35,12 +47,11 @@
 	</div>
 </body>
 <script>
-	$('#file-fr').fileinput({
+	$('#file-daily').fileinput({
 		language : 'zh',
-		theme : "fa",
-		uploadUrl : '/uploadDayDaily',
+		uploadUrl : '/uploadReport?type=daily',
 		allowedFileExtensions : [ 'xls', 'xlsx' ],
-		showPreview :true, // 是否预览打开
+		showPreview :false, // 是否预览打开
 	}).on('fileerror', function(event, data, msg) {
 
 	}).on("fileuploaded", function (event, data, previewId, index) {
@@ -48,11 +59,37 @@
  	});
     
 	
-	$('#file-es').fileinput({
+	$('#file-month').fileinput({
 		language : 'zh',
-		theme : "fa",
-		uploadUrl : '/uploadMonthDaily',
+		uploadUrl : '/uploadReport?type=month',
 		allowedFileExtensions : [ 'xls', 'xlsx' ],
-	});
+		showPreview :false, // 是否预览打开
+	}).on('fileerror', function(event, data, msg) {
+
+	}).on("fileuploaded", function (event, data, previewId, index) {
+		alert(JSON.stringify(data.response.msg));
+ 	});
+	
+	$('#file-xybalsy').fileinput({
+		language : 'zh',
+		uploadUrl : '/uploadReport?type=xybalsy',
+		allowedFileExtensions : [ 'xls', 'xlsx' ],
+		showPreview :true, // 是否预览打开
+	}).on('fileerror', function(event, data, msg) {
+
+	}).on("fileuploaded", function (event, data, previewId, index) {
+		alert(JSON.stringify(data.response.msg));
+ 	});
+	
+	$('#file-zybalsy').fileinput({
+		language : 'zh',
+		uploadUrl : '/uploadReport?type=zybalsy',
+		allowedFileExtensions : [ 'xls', 'xlsx' ],
+		showPreview :false, // 是否预览打开
+	}).on('fileerror', function(event, data, msg) {
+
+	}).on("fileuploaded", function (event, data, previewId, index) {
+		alert(JSON.stringify(data.response.msg));
+ 	});
 </script>
 </html>
