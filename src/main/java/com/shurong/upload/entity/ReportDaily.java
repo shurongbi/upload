@@ -8,12 +8,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Entity
-@Table(name="ReportDailyNew")
+//@Entity
+//@Table(name="ReportDailyNew")
 public class ReportDaily {
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+//	@Id
+//	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 	private String 日期;
 	private String 机构ID;
