@@ -184,6 +184,7 @@ public class ExcelUtils {
      */
     public static boolean isStartContent(Row row)
     {
+    	if (row == null) return false;
     	Cell cellStart = row.getCell(0);
     	if (cellStart == null || Cell.CELL_TYPE_BLANK == cellStart.getCellType())
     		return false;
