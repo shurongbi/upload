@@ -4,8 +4,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,11 +16,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.shurong.upload.controller.UploadController;
 import com.shurong.upload.entity.ReportDaily;
 import com.shurong.upload.entity.matchup.DailyMatchup;
 import com.shurong.upload.repository.ReportDailyRepository;
@@ -33,6 +36,23 @@ public class ReportDailyService {
 	
 	@Autowired
 	private ReportDailyRepository dailyRepository;
+	
+	@Value("${upload.monthorder}")
+	private String monthorder;
+	@Value("${upload.monthdatename}")
+	private String monthdatename;
+	@Value("${upload.monthdateindex}")
+	private int monthdateindex;
+	
+	@Value("${upload.dailyorder}")
+	private String dailyorder;
+	@Value("${upload.dailydatename}")
+	private String dailydatename;
+	@Value("${upload.dailydateindex}")
+	private int dailydateindex;
+	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 	/**
 	 * 处理日报上传
 	 * @param wb
@@ -129,5 +149,115 @@ public class ReportDailyService {
 		dailyRepository.save(reportDailyList);
 		return null;
 	}
+	
+	/**
+	 * 根据excel位置处理日报上传
+	 * @param wb
+	 * @return
+	 */
+	public int doDailyReportBySize(Workbook wb){
+		
+		String sql = "insert into REPORT_DAILY values ("+dailyorder.replaceAll("\\d+", "?")+")";
+		String deleteSql = "delete from REPORT_DAILY where " + dailydatename + " = ?";
+		String[] excelOrder = dailyorder.split(",");
+		logger.info("导入日报生成的sql：" + sql);
+		
+		List<Object[]> params = new ArrayList<>();
+		Set<String> dateValueAray = new HashSet<>();
+		for (int i = 0;i<wb.getNumberOfSheets();i++){
+			//获取正文开始的行数
+			Sheet sheet = wb.getSheetAt(i);
+			if (sheet == null) continue;
+			int firstRowNum = sheet.getFirstRowNum();
+			while (!ExcelUtils.isStartContent(sheet.getRow(firstRowNum))) {
+				firstRowNum++;
+			}
+					
+			for (int j = firstRowNum; j <= sheet.getLastRowNum(); j++)
+			{
+				Row row = sheet.getRow(j);
+				if (row == null) continue;
+				
+				//获取本行插入的日期
+				String dateValue = row.getCell(dailydateindex -1 ).getStringCellValue();
+				dateValueAray.add(dateValue);
+				
+				Object[] obj = new Object[excelOrder.length];
+				for (int k = 0; k < excelOrder.length; k++)
+				{
+					//java中是从0开始的，数excel位置是从1开始的。故去位置时-1来算
+					obj[k] = ExcelUtils.getCellValue(row.getCell(Integer.parseInt(excelOrder[k])-1));
+				}
+				params.add(obj);
+//				jdbcTemplate.update(sql, obj);
+			}
+			
+		}
+		int deleteSum = 0;
+		if (!CollectionUtils.isEmpty(dateValueAray))
+		{
+			 deleteSum = jdbcTemplate.update(deleteSql, dateValueAray.toArray());
+			logger.info("导入日报时删除重复数据" +deleteSum+"条");
+		}
+		jdbcTemplate.batchUpdate(sql, params);
+		return params.size();
+		
+	}
+	
+	/**
+	 * 处理月报上传
+	 * @param wb
+	 * @return
+	 */
+	public int doMonthReport(Workbook wb)
+	{
+		String sql = "insert into REPORT_MONTH values ("+monthorder.replaceAll("\\d+", "?")+")";
+		String deleteSql = "delete from REPORT_MONTH where " + monthdatename + " = ?";
+		String[] excelOrder = monthorder.split(",");
+		logger.info("导入月报生成的sql：" + sql);
+		
+		List<Object[]> params = new ArrayList<>();
+		Set<String> dateValueAray = new HashSet<>();
+		
+		for (int i = 0;i<wb.getNumberOfSheets();i++){
+			//获取正文开始的行数
+			Sheet sheet = wb.getSheetAt(i);
+			if (sheet == null) continue;
+			int firstRowNum = sheet.getFirstRowNum();
+			while (!ExcelUtils.isStartContent(sheet.getRow(firstRowNum))) {
+				firstRowNum++;
+			}
+					
+			for (int j = firstRowNum; j <= sheet.getLastRowNum(); j++)
+			{
+				Row row = sheet.getRow(j);
+				if (row == null) continue;
+				
+				//获取本行插入的日期
+				String dateValue = row.getCell(monthdateindex -1 ).getStringCellValue();
+				dateValueAray.add(dateValue);
+				
+				Object[] obj = new Object[excelOrder.length];
+				for (int k = 0; k < excelOrder.length; k++)
+				{
+					//java中是从0开始的，数excel位置是从1开始的。故去位置时-1来算
+					obj[k] = ExcelUtils.getCellValue(row.getCell(Integer.parseInt(excelOrder[k])-1));
+				}
+				params.add(obj);
+//				jdbcTemplate.update(sql, obj);
+			}
+			
+		}
+		
+		int deleteSum = 0;
+		if (!CollectionUtils.isEmpty(dateValueAray))
+		{
+			deleteSum = jdbcTemplate.update(deleteSql, dateValueAray.toArray());
+			logger.info("导入月报是删除重复数据" +deleteSum+"条");
+		}
+		jdbcTemplate.batchUpdate(sql, params);
+		return params.size();
+	}
+	
 	
 }

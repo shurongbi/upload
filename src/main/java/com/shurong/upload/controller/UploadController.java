@@ -30,9 +30,10 @@ public class UploadController {
 		Map<String, Object> returnMap = new HashMap<>();
 		if (inputdaygly != null)
 		{
+			logger.info("开始上传文件：" + inputdaygly.getOriginalFilename());
 			System.out.println(inputdaygly.getOriginalFilename());
 			try {
-				reportDailyService.doDailyReport(ExcelUtils.initWorkbook(inputdaygly.getInputStream()));
+				reportDailyService.doDailyReportBySize(ExcelUtils.initWorkbook(inputdaygly.getInputStream()));
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error(inputdaygly.getOriginalFilename() + "导入失败。" , e);
@@ -52,11 +53,34 @@ public class UploadController {
 		return returnMap;
 	}
 	
+	@ResponseBody
 	@RequestMapping(value="/uploadMonthDaily")
 	public Map<String, Object> uploadMonthDaily(@RequestParam("inputmonthgly") MultipartFile inputmonthgly)
 	{
 		Map<String, Object> returnMap = new HashMap<>();
-		System.out.println(inputmonthgly.getOriginalFilename());
+
+		if (inputmonthgly != null)
+		{
+			int recordSum = 0;
+			logger.info("开始上传文件：" + inputmonthgly.getOriginalFilename());
+			try {
+				recordSum = reportDailyService.doMonthReport(ExcelUtils.initWorkbook(inputmonthgly.getInputStream()));
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(inputmonthgly.getOriginalFilename() + "导入失败。" , e);
+				returnMap.put("result", "ko");
+				returnMap.put("msg", inputmonthgly.getOriginalFilename() + "导入失败。" + e.getMessage());
+				return returnMap;
+			}
+			logger.info(inputmonthgly.getOriginalFilename() +"导入成功,共导入数据"+recordSum+"条");
+			returnMap.put("result", "ok");
+			returnMap.put("msg", inputmonthgly.getOriginalFilename() +"导入成功,共导入数据"+recordSum+"条");
+		}
+		else
+		{
+			returnMap.put("result", "ko");
+			returnMap.put("msg", "文件上传发生异常");
+		}
 		return returnMap;
 	}
 }

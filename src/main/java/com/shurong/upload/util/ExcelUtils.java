@@ -48,6 +48,7 @@ public class ExcelUtils {
     }
     
     public static Object getCellValue(Cell cell) {
+    	if (cell == null) return null;
         int cellType = cell.getCellType();
         if (cellType == Cell.CELL_TYPE_BOOLEAN) {
             return cell.getBooleanCellValue();

@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
+@Table(name="ReportDailyNew")
 public class ReportDaily {
 
 	@Id
