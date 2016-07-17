@@ -194,8 +194,12 @@ public class ReportDailyService {
 				if (row == null) continue;
 				
 				//获取本行插入的日期
-				String dateValue = row.getCell(dateIndexNum -1 ).getStringCellValue();
-				dateValueAray.add(dateValue);
+				//当dateIndexNum小于0时不删除重复的记录
+				if (dateIndexNum > 0)
+				{
+					String dateValue = row.getCell(dateIndexNum -1 ).getStringCellValue();
+					dateValueAray.add(dateValue);
+				}
 				
 				Object[] obj = new Object[excelOrder.length];
 				for (int k = 0; k < excelOrder.length; k++)
